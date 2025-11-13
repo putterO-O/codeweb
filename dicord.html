@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ยินดีต้อนรับสู่เว็บไซต์ของเรา</title>
+
+    <!-- ฟอนต์ไทยสวยๆ -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #2c2c54);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: scale(1.02);
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            animation: fadeInDown 1s ease;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin: 8px 0;
+            opacity: 0;
+            animation: fadeIn 1.2s ease forwards;
+        }
+
+        p:nth-child(2) { animation-delay: 0.5s; }
+        p:nth-child(3) { animation-delay: 1s; }
+
+        .discord-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 25px;
+            padding: 12px 20px;
+            background-color: #5865F2;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: background 0.3s ease, transform 0.3s ease;
+            font-weight: 600;
+            opacity: 0;
+            animation: fadeInUp 1.5s ease forwards;
+            animation-delay: 1.5s;
+        }
+
+        .discord-btn:hover {
+            background-color: #4752C4;
+            transform: scale(1.05);
+        }
+
+        .discord-btn img {
+            width: 32px;
+            height: 32px;
+        }
+
+        /* แอนิเมชัน */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* พื้นหลังเคลื่อนไหวเบา ๆ */
+        .bg-animation {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 10s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-animation"></div>
+
+    <div class="container">
+        <h1>สวัสดีครับยินดีต้อนรับสู่เว็บไซต์ของพวกเรา</h1>
+        <p>เว็บไซต์นี้รับทำ <strong>Web</strong> และ <strong>Logo</strong> คุณภาพอาจจะไม่ดีมากนะครับแต่พวกเราก็จะพยายามให้ถึงที่สุด</p>
+        <p>ติดต่อเราได้ที่ Discord ด้านล่าง</p>
+
+        <a href="https://discord.gg/AZgSNx7Q" target="_blank" class="discord-btn">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4ac.svg" alt="Discord">
+            <span>เข้าร่วม Discord ของเรา</span>
+        </a>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // สร้างวงกลมพื้นหลังเคลื่อนไหว
+        const bg = document.querySelector('.bg-animation');
+
+        for (let i = 0; i < 15; i++) {
+            const circle = document.createElement('div');
+            const size = Math.random() * 100 + 20;
+            circle.classList.add('circle');
+            circle.style.width = `${size}px`;
+            circle.style.height = `${size}px`;
+            circle.style.left = `${Math.random() * 100}%`;
+            circle.style.top = `${Math.random() * 100}%`;
+            circle.style.animationDuration = `${5 + Math.random() * 10}s`;
+            bg.appendChild(circle);
+        }
+
+        // เพิ่มแอนิเมชันเมื่อเลื่อนเมาส์
+        document.addEventListener('mousemove', e => {
+            const x = (window.innerWidth / 2 - e.pageX) / 40;
+            const y = (window.innerHeight / 2 - e.pageY) / 40;
+            document.querySelector('.container').style.transform = `translate(${x}px, ${y}px) scale(1.02)`;
+        });
+        document.addEventListener('mouseleave', () => {
+            document.querySelector('.container').style.transform = 'translate(0, 0) scale(1)';
+        });
+    </script>
+</body>
+</html>
