@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>หน้าแรก | GuuWeb</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Prompt', sans-serif;
+      background: linear-gradient(135deg, #1e1e2f, #2c2c54);
+      color: white;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─────────────── Navbar ─────────────── */
+    header {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 25px;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+      color: white;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    nav ul li a:hover {
+      color: #9aa3ff;
+    }
+
+    /* ─────────────── Hamburger ─────────────── */
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+      gap: 6px;
+    }
+
+    .menu-toggle span {
+      width: 26px;
+      height: 3px;
+      background: white;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+
+    /* ─────────────── Sections ─────────────── */
+    section {
+      padding: 140px 20px 80px;
+      text-align: center;
+      animation: fadeIn 1.5s ease;
+    }
+
+    h1, h2 {
+      font-weight: 600;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 40px;
+    }
+
+    p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 10px auto;
+    }
+
+    /* ─────────────── Portfolio Grid ─────────────── */
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+      margin-top: 40px;
+      padding: 0 20px;
+    }
+
+    .portfolio-item {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .portfolio-item:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .portfolio-item img {
+      width: 100%;
+      height: 600px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .portfolio-item h3 {
+      margin: 15px 0 5px;
+      font-size: 1.2rem;
+    }
+
+    .portfolio-item p {
+      font-size: 1rem;
+      opacity: 0.8;
+      padding: 0 10px 20px;
+    }
+
+    /* ─────────────── Footer ─────────────── */
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* ─────────────── Animation ─────────────── */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─────────────── Responsive ─────────────── */
+    @media (max-width: 768px) {
+      header {
+        padding: 15px 20px;
+      }
+
+      nav ul {
+        position: fixed;
+        top: 70px;
+        right: -100%;
+        background: rgba(30, 30, 47, 0.95);
+        backdrop-filter: blur(10px);
+        flex-direction: column;
+        width: 220px;
+        height: calc(100vh - 70px);
+        justify-content: center;
+        align-items: center;
+        gap: 30px;
+        transition: right 0.3s ease;
+      }
+
+      nav ul.active {
+        right: 0;
+      }
+
+      .menu-toggle {
+        display: flex;
+      }
+    }
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 50px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s ease;
+      }
+  </style>
+</head>
+
+<body>
+  <!-- ─────────────── Navbar ─────────────── -->
+  <header>
+    <div class="logo">เว็บไซต์ของเรา</div>
+
+    <div class="menu-toggle" id="menu-toggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <nav>
+      <ul id="menu">
+        <li><a href="index.html">หน้าแรก</a></li>
+        <li><a href="">ผลงาน</a></li>
+        <li><a href="#portfolio">เกี่ยวกับเรา</a></li>
+        <li><a href="dicord.html">ติดต่อเรา</a></li>
+        <li><a href="Howtouse.html">วิธีการซื้อขาย</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ─────────────── Home Section ─────────────── -->
+  <section id="home">
+    <h1>ยินดีต้อนรับสู่เว็บไซต์<strong>GuuWeb</strong></h1>
+    <img src="Gemini_Generated_Image_m3qdc4m3qdc4m3qd (1).png"</img>
+  </section>
+
+  <!-- ─────────────── Portfolio Section ─────────────── -->
+  <section id="portfolio">
+    <h2>credit</h2>
+
+    <div class="portfolio-grid">
+      <div class="portfolio-item">
+        <img src="65222.jpg" alt="Project 1">
+        <h3>admin/backend</h3>
+        <p>ด.ช.ปัณณวิชญ์ ลีนะนันทศักดิ์</p>
+      </div>
+
+      <div class="portfolio-item">
+        <img src="65233.jpg" alt="Project 2">
+        <h3>frontend/backend</h3>
+        <p>ด.ช.ภูมิพัฒน์ ขุมทรัพย์</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────── Footer ─────────────── -->
+  <footer>
+    © 2025 เว็บไซต์ของเรา | สงวนลิขสิทธิ์
+  </footer>
+
+  <!-- ─────────────── JS ─────────────── -->
+  <script>
+    const menuToggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('menu');
+    menuToggle.addEventListener('click', () => {
+      menu.classList.toggle('active');
+    });
+  </script>
+</body>
+</html>
