@@ -1,401 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Comment System</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Realtime Public Chat + AI Bot</title>
 
-    <style>
-        /* ---------------- ALL YOUR EXISTING CSS IS HERE ---------------- */
-        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
-        html{scroll-behavior:smooth;}
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
 
-        body{
-            background:linear-gradient(135deg,#6a11cb,#2575fc);
-            min-height:100vh;
-        }
-
-        /* ---------------- NAVBAR ---------------- */
-        .navbar{
-            width:100%;
-            background:rgba(0,0,0,0.35);
-            backdrop-filter:blur(10px);
-            padding:15px 30px;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            position:sticky;
-            top:0;
-            z-index:10;
-        }
-
-        .navbar .logo{
-            color:white;
-            font-size:1.6rem;
-            font-weight:700;
-            display:flex;
-            align-items:center;
-            gap:10px;
-        }
-
-        .navbar ul{
-            list-style:none;
-            display:flex;
-            gap:25px;
-        }
-
-        .navbar ul li a{
-            color:white;
-            text-decoration:none;
-            font-size:1.05rem;
-            transition:0.3s;
-            cursor:pointer;
-        }
-
-        .navbar ul li a:hover{
-            color:#00eaff;
-        }
-
-        .menu-toggle{
-            display:none;
-            font-size:1.8rem;
-            color:white;
-            cursor:pointer;
-        }
-
-        @media(max-width:780px){
-            .navbar ul{
-                position:absolute;
-                top:65px;
-                right:0;
-                width:200px;
-                flex-direction:column;
-                background:rgba(0,0,0,0.65);
-                backdrop-filter:blur(12px);
-                padding:15px;
-                border-radius:10px;
-                display:none;
-            }
-            .navbar ul.active{
-                display:flex;
-            }
-            .menu-toggle{
-                display:block;
-            }
-        }
-
-        /* ---------------- CONTENT STYLES ---------------- */
-        .main-wrapper{
-            width:100%;
-            padding:20px;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-        }
-
-        .container{
-            width:100%;
-            max-width:800px;
-            background:white;
-            border-radius:20px;
-            box-shadow:0 15px 30px rgba(0,0,0,.2);
-            overflow:hidden;
-        }
-
-        header{
-            background:#2c3e50;
-            color:white;
-            padding:25px 30px;
-            text-align:center;
-        }
-
-        .section-title{
-            text-align:center;
-            margin-top:50px;
-        }
-
-        .about-section{
-            padding:40px;
-            color:white;
-            max-width:800px;
-            margin:auto;
-            text-align:center;
-        }
-
-        .comment-section{padding:30px;}
-
-        .comment-form{
-            display:flex;gap:15px;margin-bottom:30px;padding:20px;
-            background:#f8f9fa;border-radius:15px;border:2px solid #e9ecef;
-        }
-
-        .comment-form input{
-            flex:1;padding:14px 20px;border:2px solid #ddd;border-radius:50px;font-size:1.1rem;
-        }
-
-        .comment-form button{
-            background:#3498db;color:white;border:none;border-radius:50px;padding:14px 30px;
-            font-size:1.1rem;font-weight:600;cursor:pointer;
-        }
-
-        .comments-container{display:flex;flex-direction:column;gap:25px;}
-        .comment{background:white;border:1px solid #e0e0e0;border-radius:15px;padding:20px;box-shadow:0 4px 8px rgba(0,0,0,.05);}
-        .comment-header{display:flex;justify-content:space-between;margin-bottom:12px;}
-        .comment-author{font-weight:700;color:#2c3e50;display:flex;align-items:center;gap:10px;}
-        .avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#3498db,#2c3e50);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;}
-        .comment-time{color:#7f8c8d;font-size:.9rem;}
-        .comment-content{margin:15px 0;line-height:1.6;color:#34495e;}
-        .comment-actions{display:flex;gap:15px;margin-top:10px;padding-top:15px;border-top:1px solid #eee;}
-        .reply-btn,.delete-btn{background:none;border:none;color:#7f8c8d;cursor:pointer;display:flex;gap:5px;}
-        .reply-form{display:flex;gap:10px;margin-top:15px;padding-top:15px;border-top:1px dashed #eee;}
-        .reply-form input{flex:1;padding:10px;border:1px solid #ddd;border-radius:30px;}
-        .reply-form button{background:#2ecc71;color:white;border:none;border-radius:30px;padding:10px 20px;}
-        .replies{margin-top:20px;padding-left:30px;border-left:2px solid #f0f0f0;}
-        .no-comments{text-align:center;padding:40px;color:#7f8c8d;font-style:italic;}
-    </style>
+<style>
+    body { font-family: Arial; background:#2575fc; padding:0; margin:0; display:flex; justify-content:center; }
+    .chat-box { width:100%; max-width:600px; background:#fff; margin-top:40px; border-radius:15px; padding:20px;
+        box-shadow:0 10px 25px rgba(0,0,0,0.2);}
+    h2 { text-align:center; margin-bottom:15px; }
+    .messages { height:400px; overflow-y:auto; border:1px solid #ddd; padding:10px; border-radius:10px; background:#fafafa; margin-bottom:15px; }
+    .msg { padding:10px 15px; margin-bottom:10px; border-radius:10px; }
+    .user-msg { background:#e9f2ff; text-align: right; } /* User's own message */
+    .other-msg { background:#f0f0f0; text-align: left; } /* Other human user's message */
+    .bot-msg { background:#ffeccb; text-align: left; border-left: 5px solid #ffaa00; } /* AI Bot's message */
+    .msg small { color:#777; font-size: 0.75em; }
+    .input-row { display:flex; gap:10px; }
+    input { flex:1; padding:12px; border-radius:8px; border:1px solid #bbb; }
+    button { background:#3498db; border:none; color:white; padding:12px 20px; border-radius:8px; cursor:pointer; }
+</style>
 </head>
 
 <body>
 
-<nav class="navbar">
-    <div class="logo"><i class="fas fa-comment-dots"></i> GuuWeb</div>
+<div class="chat-box">
+    <h2>รีวิวร้าน(คุยเล่นก็ได้น้าาา)</h2>
+    <div class="messages" id="messages"></div>
 
-    <i class="fas fa-bars menu-toggle"></i>
-
-    <ul id="navLinks">
-        <li><a href="index.html">หน้าแรก</a></li>
-        <li><a href="vlog.html">ผลงาน</a></li>
-    </ul>
-</nav>
-
-<div id="home" class="section-title"></div>
-
-<div class="main-wrapper" id="comments">
-<div class="container">
-    <header>
-        <h1><i class="fas fa-comments"></i> chatได้เลยน้าาา</h1>
-        <p>ระวังนะลบแชทไม่ได้น้าาา</p>
-    </header>
-
-    <div class="comment-section">
-        <div class="comment-form">
-            <input type="text" id="commentInput" placeholder="Write your comment...">
-            <button id="addCommentBtn"><i class="fas fa-paper-plane"></i> Post</button>
-        </div>
-
-        <div class="comments-container" id="commentsContainer">
-            <div class="no-comments" id="noComments">:D</div>
-        </div>
+    <div class="input-row">
+        <input type="text" id="msgInput" placeholder="Type a message...">
+        <button onclick="sendUserMessage()">Send</button>
     </div>
 </div>
-</div>
 
-<div id="about" class="about-section">
-</div>
 
 <script>
-/* ------------ NAVBAR MENU ------------ */
-const navLinks = document.getElementById("navLinks");
-document.querySelector(".menu-toggle").onclick = () => {
-    navLinks.classList.toggle("active");
+/* ----------------------------------------------------------
+    0) CONFIGURATION (REQUIRED!)
+    *** REPLACE ALL PLACEHOLDERS BELOW WITH YOUR OWN KEYS AND DETAILS ***
+---------------------------------------------------------- */
+const firebaseConfig = {
+    apiKey: "YOUR_FIREBASE_API_KEY",
+    authDomain: "YOUR_APP.firebaseapp.com",
+    databaseURL: "https://YOUR_APP-default-rtdb.firebaseio.com",
+    projectId: "YOUR_APP",
+    storageBucket: "YOUR_APP.appspot.com",
+    messagingSenderId: "123",
+    appId: "123"
 };
 
-/* ------------ SCROLL TO SECTIONS ------------ */
-function scrollToSection(id){
-    document.getElementById(id).scrollIntoView({behavior:"smooth"});
+const openAI_API_Key = "YOUR_OPENAI_KEY"; // *** REPLACE THIS ***
 
-    // Close mobile menu
-    navLinks.classList.remove("active");
-}
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
 
-/* ------------ COMMENT SYSTEM - ENHANCED ------------ */
-let comments = [], nextId = 1;
-
-const CURRENT_USER_NAME = "GuuWeb Admin"; // Display name for initial/admin comments
-const NEW_COMMENT_AUTHOR = "Guest";      // Display name for new comments
-
-const commentInput = document.getElementById('commentInput');
-const commentsContainer = document.getElementById('commentsContainer');
-const noCommentsEl = document.getElementById('noComments');
-
-// --- Persistence Functions ---
-function saveComments() {
-    localStorage.setItem('commentsData', JSON.stringify({ comments, nextId }));
-}
-
-// Recursively convert timestamp strings back to Date objects
-function deepParseComment(comment) {
-    // Only set if it's a string (which it will be after JSON.parse)
-    if (typeof comment.timestamp === 'string') {
-        comment.timestamp = new Date(comment.timestamp);
+/* ----------------------------------------------------------
+    1) USER IDENTIFICATION
+---------------------------------------------------------- */
+let userName = "Guest"; 
+// Prompt for a username when the page loads
+while (userName === "Guest" || userName.trim() === "") {
+    let input = prompt("Welcome! Please enter your desired username:");
+    if (input && input.trim() !== "") {
+        userName = input.trim();
     }
-    comment.replies = comment.replies.map(r => deepParseComment(r));
-    return comment;
 }
 
-function loadComments() {
-    const data = localStorage.getItem('commentsData');
-    if (data) {
-        try {
-            const parsedData = JSON.parse(data);
-            comments = parsedData.comments.map(c => deepParseComment(c));
-            nextId = parsedData.nextId;
-        } catch (e) {
-            console.error("Could not load comments from localStorage:", e);
-        }
-    } else {
-         // Seed the first comment if no data is found (only on first load)
-        const c = { id: nextId++, content: "Welcome to the interactive chat system! Try replying or deleting me. (This message is only stored locally on your browser)", author: CURRENT_USER_NAME, timestamp: new Date(), parentId: null, replies: [] };
-        comments.push(c);
-        saveComments();
-    }
-    renderComments();
-}
-// -----------------------------
 
-function escapeHtml(text) {
-    const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" };
-    return text.replace(/[&<>"']/g, m => map[m]);
-}
+/* ----------------------------------------------------------
+    2) SEND USER MESSAGE (Posts to Firebase and triggers Bot)
+---------------------------------------------------------- */
+function sendUserMessage() {
+    const msgInput = document.getElementById("msgInput");
+    const msg = msgInput.value.trim();
+    if (!msg) return;
 
-function formatTime(date) {
-    const now = new Date(), d = now - date, min = Math.floor(d / 60000), h = Math.floor(d / 3600000), day = Math.floor(d / 86400000);
-    if (min < 1) return "Just now";
-    if (min < 60) return `${min} min ago`;
-    if (h < 24) return `${h} hour${h > 1 ? "s" : ""} ago`;
-    return `${day} day${day > 1 ? "s" : ""} ago`;
-}
-
-function addComment(content, parentId = null) {
-    if (!content.trim()) return;
-    
-    // Use the defined author name
-    const authorName = parentId === null ? NEW_COMMENT_AUTHOR : NEW_COMMENT_AUTHOR;
-    
-    const c = {
-        id: nextId++,
-        content: escapeHtml(content),
-        author: authorName,
-        timestamp: new Date(),
-        parentId,
-        replies: []
-    };
-    
-    if (parentId === null) comments.push(c);
-    else findCommentById(parentId).replies.push(c);
-    
-    saveComments();
-    renderComments();
-    commentInput.value = '';
-}
-
-function findCommentById(id) {
-    function search(list) {
-        for (let c of list) {
-            if (c.id === id) return c;
-            let f = search(c.replies);
-            if (f) return f;
-        }
-        return null;
-    }
-    return search(comments);
-}
-
-function deleteComment(id) {
-    function del(list) {
-        const i = list.findIndex(c => c.id === id);
-        if (i !== -1) {
-            list.splice(i, 1);
-            return true;
-        }
-        for (let c of list)
-            if (del(c.replies)) return true;
-        return false;
-    }
-    del(comments);
-    saveComments();
-    renderComments();
-}
-
-function createCommentElement(comment) {
-    const el = document.createElement('div');
-    el.className = 'comment';
-    
-    // Determine the author to display
-    const displayAuthor = comment.author === "User" ? CURRENT_USER_NAME : comment.author;
-
-    el.innerHTML = `
-        <div class="comment-header">
-            <div class="comment-author"><div class="avatar">${displayAuthor[0]}</div>${displayAuthor}</div>
-            <div class="comment-time" data-comment-id="${comment.id}">${formatTime(comment.timestamp)}</div>
-        </div>
-        <div class="comment-content">${comment.content}</div>
-        <div class="comment-actions">
-            <button class="reply-btn"><i class="fas fa-reply"></i> Reply</button>
-            <button class="delete-btn"><i class="fas fa-trash"></i> Delete</button>
-        </div>
-    `;
-
-    const rf = document.createElement('div');
-    rf.className = 'reply-form';
-    rf.style.display = 'none';
-    rf.innerHTML = `<input type="text" placeholder="Write a reply..."><button>Reply</button>`;
-    el.appendChild(rf);
-
-    el.querySelector('.reply-btn').onclick = () => rf.style.display = rf.style.display === 'none' ? 'flex' : 'none';
-    el.querySelector('.delete-btn').onclick = () => deleteComment(comment.id);
-    
-    rf.querySelector('button').onclick = () => {
-        const t = rf.querySelector('input').value;
-        if (t.trim()) {
-            addComment(t, comment.id);
-            rf.querySelector('input').value = '';
-            rf.style.display = 'none';
-        }
-    };
-
-    if (comment.replies.length) {
-        const r = document.createElement('div');
-        r.className = 'replies';
-        comment.replies.forEach(x => r.appendChild(createCommentElement(x)));
-        el.appendChild(r);
-    }
-    return el;
-}
-
-function renderComments() {
-    commentsContainer.innerHTML = '';
-    if (comments.length === 0) {
-        noCommentsEl.style.display = 'block';
-        commentsContainer.appendChild(noCommentsEl);
-        return;
-    }
-    noCommentsEl.style.display = 'none';
-    comments.forEach(c => commentsContainer.appendChild(createCommentElement(c)));
-}
-
-// Function to update the time display on all elements
-function updateCommentTimes() {
-    document.querySelectorAll('.comment-time').forEach(el => {
-        const commentId = parseInt(el.dataset.commentId);
-        const comment = findCommentById(commentId);
-        if (comment) {
-            el.textContent = formatTime(comment.timestamp);
-        }
+    // 2a) Send the human message to Firebase
+    db.ref("chat").push().set({
+        author: userName,
+        text: msg,
+        time: Date.now(),
+        bot: false // Explicitly mark as not a bot message
     });
+
+    // 2b) BOT replies automatically
+    sendBotReply(msg); 
+
+    // Clear the input field
+    msgInput.value = "";
 }
 
-// Event Listeners
-document.getElementById('addCommentBtn').onclick = () => addComment(commentInput.value);
-commentInput.onkeypress = e => { if (e.key === 'Enter') addComment(commentInput.value); };
+// Allow sending with the Enter key
+document.getElementById("msgInput").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        sendUserMessage();
+    }
+});
 
-// Load comments on startup
-document.addEventListener('DOMContentLoaded', loadComments);
 
-// Run time update every minute
-setInterval(updateCommentTimes, 60000);
+/* ----------------------------------------------------------
+    3) AI BOT LOGIC (Sends the reply to Firebase)
+---------------------------------------------------------- */
+async function sendBotReply(userMsg) {
+    const reply = await callAI(userMsg);
+
+    if (reply) {
+        db.ref("chat").push().set({
+            author: "AI Bot",
+            text: reply,
+            time: Date.now(),
+            bot: true // Explicitly mark as a bot message
+        });
+    }
+}
+
+async function callAI(promptText) {
+    try {
+        const res = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + openAI_API_Key
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "system", content: "You are a friendly, helpful, and concise chat bot participating in a public chat. Respond briefly." },
+                    { role: "user", content: promptText }
+                ]
+            })
+        });
+
+        if (!res.ok) {
+            throw new Error(`OpenAI API request failed with status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        return data.choices[0].message.content;
+
+    } catch (error) {
+        console.error("Error calling AI:", error);
+        return "Sorry, I'm having trouble connecting to my brain right now.";
+    }
+}
+
+
+/* ----------------------------------------------------------
+    4) REALTIME LISTENER (Displays all messages)
+---------------------------------------------------------- */
+const messagesDiv = document.getElementById("messages");
+
+db.ref("chat").on("value", snapshot => {
+    const data = snapshot.val();
+    messagesDiv.innerHTML = ""; // Clear for full redraw
+
+    if (!data) return;
+
+    Object.values(data).forEach(m => {
+        const el = document.createElement("div");
+        el.className = "msg";
+        
+        // Dynamic class assignment for styling:
+        if (m.bot) {
+            el.classList.add("bot-msg");
+        } else if (m.author === userName) {
+            el.classList.add("user-msg");
+        } else {
+            el.classList.add("other-msg");
+        }
+        
+        const time = new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        el.innerHTML = `
+            <strong>${m.author}</strong><br>
+            ${m.text}<br>
+            <small>${time}</small>
+        `;
+
+        messagesDiv.appendChild(el);
+    });
+
+    // Auto-scroll to the bottom
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+});
 </script>
 
 </body>
