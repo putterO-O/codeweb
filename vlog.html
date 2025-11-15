@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        /* ---------------- ALL YOUR EXISTING CSS IS HERE ---------------- */
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
         html{scroll-behavior:smooth;}
 
@@ -157,7 +158,6 @@
 
 <body>
 
-<!-- ---------------- NAVBAR ---------------- -->
 <nav class="navbar">
     <div class="logo"><i class="fas fa-comment-dots"></i> GuuWeb</div>
 
@@ -169,10 +169,8 @@
     </ul>
 </nav>
 
-<!-- ---------------- HOME ---------------- -->
 <div id="home" class="section-title"></div>
 
-<!-- ---------------- MAIN CONTENT ---------------- -->
 <div class="main-wrapper" id="comments">
 <div class="container">
     <header>
@@ -193,7 +191,6 @@
 </div>
 </div>
 
-<!-- ---------------- ABOUT SECTION ---------------- -->
 <div id="about" class="about-section">
 </div>
 
@@ -212,52 +209,127 @@ function scrollToSection(id){
     navLinks.classList.remove("active");
 }
 
-/* ------------ COMMENT SYSTEM ------------ */
-let comments=[],nextId=1;
 
-const commentInput=document.getElementById('commentInput');
-const commentsContainer=document.getElementById('commentsContainer');
-const noCommentsEl=document.getElementById('noComments');
+/* ------------ COMMENT SYSTEM - ENHANCED ------------ */
+let comments = [], nextId = 1;
 
-function escapeHtml(text){
-    const map={"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"};
-    return text.replace(/[&<>"']/g,m=>map[m]);
-}
-function formatTime(date){
-    const now=new Date(),d=now-date,min=Math.floor(d/60000),h=Math.floor(d/3600000),day=Math.floor(d/86400000);
-    if(min<1)return"Just now";if(min<60)return`${min} min ago`;if(h<24)return`${h} hour${h>1?"s":""} ago`;
-    return `${day} day${day>1?"s":""} ago`;
+const CURRENT_USER_NAME = "GuuWeb Admin"; // Display name for initial/admin comments
+const NEW_COMMENT_AUTHOR = "Guest";      // Display name for new comments
+
+const commentInput = document.getElementById('commentInput');
+const commentsContainer = document.getElementById('commentsContainer');
+const noCommentsEl = document.getElementById('noComments');
+
+// --- Persistence Functions ---
+function saveComments() {
+    localStorage.setItem('commentsData', JSON.stringify({ comments, nextId }));
 }
 
-function addComment(content,parentId=null){
-    if(!content.trim())return;
-    const c={id:nextId++,content:escapeHtml(content),author:`User`,timestamp:new Date(),parentId,replies:[]};
-    if(parentId===null)comments.push(c); else findCommentById(parentId).replies.push(c);
-    renderComments(); commentInput.value='';
+// Recursively convert timestamp strings back to Date objects
+function deepParseComment(comment) {
+    // Only set if it's a string (which it will be after JSON.parse)
+    if (typeof comment.timestamp === 'string') {
+        comment.timestamp = new Date(comment.timestamp);
+    }
+    comment.replies = comment.replies.map(r => deepParseComment(r));
+    return comment;
 }
-function findCommentById(id){
-    function search(list){
-        for(let c of list){ if(c.id===id)return c; let f=search(c.replies); if(f)return f; }
+
+function loadComments() {
+    const data = localStorage.getItem('commentsData');
+    if (data) {
+        try {
+            const parsedData = JSON.parse(data);
+            comments = parsedData.comments.map(c => deepParseComment(c));
+            nextId = parsedData.nextId;
+        } catch (e) {
+            console.error("Could not load comments from localStorage:", e);
+        }
+    } else {
+         // Seed the first comment if no data is found (only on first load)
+        const c = { id: nextId++, content: "Welcome to the interactive chat system! Try replying or deleting me. (This message is only stored locally on your browser)", author: CURRENT_USER_NAME, timestamp: new Date(), parentId: null, replies: [] };
+        comments.push(c);
+        saveComments();
+    }
+    renderComments();
+}
+// -----------------------------
+
+function escapeHtml(text) {
+    const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function formatTime(date) {
+    const now = new Date(), d = now - date, min = Math.floor(d / 60000), h = Math.floor(d / 3600000), day = Math.floor(d / 86400000);
+    if (min < 1) return "Just now";
+    if (min < 60) return `${min} min ago`;
+    if (h < 24) return `${h} hour${h > 1 ? "s" : ""} ago`;
+    return `${day} day${day > 1 ? "s" : ""} ago`;
+}
+
+function addComment(content, parentId = null) {
+    if (!content.trim()) return;
+    
+    // Use the defined author name
+    const authorName = parentId === null ? NEW_COMMENT_AUTHOR : NEW_COMMENT_AUTHOR;
+    
+    const c = {
+        id: nextId++,
+        content: escapeHtml(content),
+        author: authorName,
+        timestamp: new Date(),
+        parentId,
+        replies: []
+    };
+    
+    if (parentId === null) comments.push(c);
+    else findCommentById(parentId).replies.push(c);
+    
+    saveComments();
+    renderComments();
+    commentInput.value = '';
+}
+
+function findCommentById(id) {
+    function search(list) {
+        for (let c of list) {
+            if (c.id === id) return c;
+            let f = search(c.replies);
+            if (f) return f;
+        }
         return null;
     }
     return search(comments);
 }
-function deleteComment(id){
-    function del(list){
-        const i=list.findIndex(c=>c.id===id); if(i!==-1){list.splice(i,1);return true;}
-        for(let c of list) if(del(c.replies)) return true;
+
+function deleteComment(id) {
+    function del(list) {
+        const i = list.findIndex(c => c.id === id);
+        if (i !== -1) {
+            list.splice(i, 1);
+            return true;
+        }
+        for (let c of list)
+            if (del(c.replies)) return true;
         return false;
     }
-    del(comments); renderComments();
+    del(comments);
+    saveComments();
+    renderComments();
 }
 
-function createCommentElement(comment){
-    const el=document.createElement('div');
-    el.className='comment';
-    el.innerHTML=`
+function createCommentElement(comment) {
+    const el = document.createElement('div');
+    el.className = 'comment';
+    
+    // Determine the author to display
+    const displayAuthor = comment.author === "User" ? CURRENT_USER_NAME : comment.author;
+
+    el.innerHTML = `
         <div class="comment-header">
-            <div class="comment-author"><div class="avatar">${comment.author[0]}</div>${comment.author}</div>
-            <div class="comment-time">${formatTime(comment.timestamp)}</div>
+            <div class="comment-author"><div class="avatar">${displayAuthor[0]}</div>${displayAuthor}</div>
+            <div class="comment-time" data-comment-id="${comment.id}">${formatTime(comment.timestamp)}</div>
         </div>
         <div class="comment-content">${comment.content}</div>
         <div class="comment-actions">
@@ -266,40 +338,64 @@ function createCommentElement(comment){
         </div>
     `;
 
-    const rf=document.createElement('div');
-    rf.className='reply-form'; rf.style.display='none';
-    rf.innerHTML=`<input type="text" placeholder="Write a reply..."><button>Reply</button>`;
+    const rf = document.createElement('div');
+    rf.className = 'reply-form';
+    rf.style.display = 'none';
+    rf.innerHTML = `<input type="text" placeholder="Write a reply..."><button>Reply</button>`;
     el.appendChild(rf);
 
-    el.querySelector('.reply-btn').onclick=()=>rf.style.display=rf.style.display==='none'?'flex':'none';
-    el.querySelector('.delete-btn').onclick=()=>deleteComment(comment.id);
-    rf.querySelector('button').onclick=()=>{
-        const t=rf.querySelector('input').value;
-        if(t.trim()){addComment(t,comment.id);rf.querySelector('input').value='';rf.style.display='none';}
+    el.querySelector('.reply-btn').onclick = () => rf.style.display = rf.style.display === 'none' ? 'flex' : 'none';
+    el.querySelector('.delete-btn').onclick = () => deleteComment(comment.id);
+    
+    rf.querySelector('button').onclick = () => {
+        const t = rf.querySelector('input').value;
+        if (t.trim()) {
+            addComment(t, comment.id);
+            rf.querySelector('input').value = '';
+            rf.style.display = 'none';
+        }
     };
 
-    if(comment.replies.length){
-        const r=document.createElement('div');
-        r.className='replies';
-        comment.replies.forEach(x=>r.appendChild(createCommentElement(x)));
+    if (comment.replies.length) {
+        const r = document.createElement('div');
+        r.className = 'replies';
+        comment.replies.forEach(x => r.appendChild(createCommentElement(x)));
         el.appendChild(r);
     }
     return el;
 }
 
-function renderComments(){
-    commentsContainer.innerHTML='';
-    if(comments.length===0){
-        noCommentsEl.style.display='block';
+function renderComments() {
+    commentsContainer.innerHTML = '';
+    if (comments.length === 0) {
+        noCommentsEl.style.display = 'block';
         commentsContainer.appendChild(noCommentsEl);
         return;
     }
-    noCommentsEl.style.display='none';
-    comments.forEach(c=>commentsContainer.appendChild(createCommentElement(c)));
+    noCommentsEl.style.display = 'none';
+    comments.forEach(c => commentsContainer.appendChild(createCommentElement(c)));
 }
 
-document.getElementById('addCommentBtn').onclick=()=>addComment(commentInput.value);
-commentInput.onkeypress=e=>{if(e.key==='Enter')addComment(commentInput.value);};
+// Function to update the time display on all elements
+function updateCommentTimes() {
+    document.querySelectorAll('.comment-time').forEach(el => {
+        const commentId = parseInt(el.dataset.commentId);
+        const comment = findCommentById(commentId);
+        if (comment) {
+            el.textContent = formatTime(comment.timestamp);
+        }
+    });
+}
+
+// Event Listeners
+document.getElementById('addCommentBtn').onclick = () => addComment(commentInput.value);
+commentInput.onkeypress = e => { if (e.key === 'Enter') addComment(commentInput.value); };
+
+// Load comments on startup
+document.addEventListener('DOMContentLoaded', loadComments);
+
+// Run time update every minute
+setInterval(updateCommentTimes, 60000);
 </script>
 
 </body>
